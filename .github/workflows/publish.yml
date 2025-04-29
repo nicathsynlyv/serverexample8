@@ -78,12 +78,6 @@ jobs:
           echo "GITHUB_REPO_OWNER: ${GITHUB_REPO_OWNER}"
           echo "IMAGE_TAG: ${IMAGE_TAG}"
           
-          
-      - name: Setup SSH key
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.DEV_SERVER_PRIVATE_KEY }}" > ~/.ssh/private_key
-         chmod 600 ~/.ssh/private_key
 
       - name: Deploy via SSH
         run: |
