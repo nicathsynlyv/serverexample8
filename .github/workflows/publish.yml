@@ -81,17 +81,29 @@ jobs:
 
       - name: Deploy via SSH
         run: |
-          ssh -i $HOME/.ssh/private_key -p $SERVER_PORT -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_HOST <<EOF
-            cd ~/workspace/backend
-            export GITHUB_REPO_OWNER=${GITHUB_REPO_OWNER}
-            export TAG=${TAG}
-            echo "${GITHUB_TOKEN}" | docker login ghcr.io -u ${GITHUB_REPO_OWNER} --password-stdin
+          # Əvvəlcə faylların mövcud olduğunu yoxlayaq
+          if [ ! -f "docker-compose.$ENV.yml" ]; then
+            echo "Xəta: docker-compose.$ENV.yml faylı tapılmadı!"
+            exit 1
+          fi
+          
+          ssh -i $HOME/.ssh/private_key -p $SERVER_PORT -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_HOST /bin/bash << 'EOT'
+            cd ~/workspace/backend || { echo "Xəta: Qovluq dəyişmək mümkün olmadı"; exit 1; }
+          
+            # Docker login
+            echo "${GITHUB_TOKEN}" | docker login ghcr.io -u ${GITHUB_REPO_OWNER} --password-stdin || { echo "Xəta: Docker login uğursuz oldu"; exit 1; }
+          
+            # Environment substitution
             envsubst < docker-compose.$ENV.yml > docker-compose.substituted.yml
-            mv docker-compose.substituted.yml docker-compose.$ENV.yml
-            docker compose -f docker-compose.$TAG.yml pull
-            docker compose -f docker-compose.$ENV.yml down
-            docker compose -f docker-compose.$ENV.yml up -d
-          EOF
+            mv docker-compose.substituted.yml docker-compose.$ENV.yml || { echo "Xəta: Fayl köçürülməsi uğursuz oldu"; exit 1; }
+          
+            # Docker əmrləri
+            docker compose -f docker-compose.$ENV.yml pull || { echo "Xəta: Pull uğursuz oldu"; exit 1; }
+            docker compose -f docker-compose.$ENV.yml down || { echo "Xəta: Down uğursuz oldu"; exit 1; }
+            docker compose -f docker-compose.$ENV.yml up -d || { echo "Xəta: Up uğursuz oldu"; exit 1; }
+          
+            echo "Deploy uğurla başa çatdı!"
+          EOT
 
 
 
