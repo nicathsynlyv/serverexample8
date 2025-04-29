@@ -63,20 +63,20 @@ jobs:
           docker build -t ghcr.io/${{ github.actor }}/${IMAGE_NAME}:$TAG .
           docker push ghcr.io/${{ github.actor }}/${IMAGE_NAME}:$TAG
 
-#      - name: Setup SSH
-#        run: |
-#          mkdir -p ~/.ssh
-#          echo "$PRIVATE_KEY" > ~/.ssh/id_rsa
-#          chmod 600 ~/.ssh/id_rsa
+      #      - name: Setup SSH
+      #        run: |
+      #          mkdir -p ~/.ssh
+      #          echo "$PRIVATE_KEY" > ~/.ssh/id_rsa
+      #          chmod 600 ~/.ssh/id_rsa
 
       - name: Transfer Compose File
         run: |
-          scp -i $HOME/.ssh/private_key -P $SERVER_PORT -o StrictHostKeyChecking=no docker-compose.$ENV.yml $SERVER_USER@$SERVER_HOST:~/workspace/backend/nicat/
+          scp -i $HOME/.ssh/private_key -P $SERVER_PORT -o StrictHostKeyChecking=no docker-compose.$ENV.yml $SERVER_USER@$SERVER_HOST:~/workspace/backend/
 
       - name: Debug Environment Variables
         run: |
-            echo "GITHUB_REPO_OWNER: ${GITHUB_REPO_OWNER}"
-            echo "IMAGE_TAG: ${IMAGE_TAG}"
+          echo "GITHUB_REPO_OWNER: ${GITHUB_REPO_OWNER}"
+          echo "IMAGE_TAG: ${IMAGE_TAG}"
 
       - name: Deploy via SSH
         run: |
